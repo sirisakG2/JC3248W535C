@@ -42,6 +42,14 @@ logging coordinates over serial.
 
 Verified on hardware: display, touch and pin mapping all work; touch response is fast.
 
+## LVGL demo
+
+`src/main.cpp` is an LVGL 9 demo (button counter, brightness slider, switch, arc). Verified on hardware: all touch works.
+
+- Config is passed as build flags in `platformio.ini` (`-DLV_CONF_SKIP` plus a few `LV_*` defines), so there is no `lv_conf.h`.
+- LVGL renders in PARTIAL mode into a 40-line internal-RAM buffer; `flush_cb` copies each area into the `Arduino_Canvas` and calls `gfx->flush()` once on the last area of a frame.
+- Touch is exposed to LVGL as a pointer indev via `touch_cb`.
+
 ## Notes / gotchas
 
 - Colour constants are `RGB565_BLACK`, `RGB565_RED`, etc. in current GFX Library versions.
