@@ -40,4 +40,13 @@ logging coordinates over serial.
 
 ## Status
 
-Project scaffolded; first flash and display/touch verification pending.
+Verified on hardware: display, touch and pin mapping all work; touch response is fast.
+
+## Notes / gotchas
+
+- Colour constants are `RGB565_BLACK`, `RGB565_RED`, etc. in current GFX Library versions.
+- Drawing directly to the panel (no canvas) garbles the picture on this controller. Use `Arduino_Canvas` and `flush()`.
+- Start the bus at 40MHz: `gfx->begin(40000000)`.
+- Flush at most every ~30ms and only when something changed; flushing on every touch event is slow.
+- Touch read: write `B5 AB A5 5A 00 00 00 08` to 0x3B, read 8 bytes; `b[1]` = touch count, x = `(b[2]&0x0F)<<8 | b[3]`, y = `(b[4]&0x0F)<<8 | b[5]`.
+- If upload won't start: hold BOOT, tap RESET, release BOOT.

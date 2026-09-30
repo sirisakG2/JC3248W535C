@@ -33,14 +33,14 @@ void setup() {
   Serial.println("JC3248W535C boot");
   Serial.printf("PSRAM: %u bytes\n", ESP.getPsramSize());
 
-  if (!gfx->begin()) Serial.println("gfx->begin() FAILED");
+  if (!gfx->begin(40000000)) Serial.println("gfx->begin(40000000) FAILED");
   pinMode(GFX_BL, OUTPUT);
   digitalWrite(GFX_BL, HIGH);
-  gfx->fillScreen(BLACK);
-  gfx->fillRect(0, 0, 320, 160, RED);
-  gfx->fillRect(0, 160, 320, 160, GREEN);
-  gfx->fillRect(0, 320, 320, 160, BLUE);
-  gfx->setTextColor(WHITE);
+  gfx->fillScreen(RGB565_BLACK);
+  gfx->fillRect(0, 0, 320, 160, RGB565_RED);
+  gfx->fillRect(0, 160, 320, 160, RGB565_GREEN);
+  gfx->fillRect(0, 320, 320, 160, RGB565_BLUE);
+  gfx->setTextColor(RGB565_WHITE);
   gfx->setTextSize(3);
   gfx->setCursor(20, 20);
   gfx->println("Hello JC3248");
@@ -53,11 +53,17 @@ void setup() {
 }
 
 void loop() {
+  static bool dirty = false;
+  static uint32_t lastFlush = 0;
   int x, y;
   if (readTouch(x, y)) {
-    Serial.printf("touch x=%d y=%d\n", x, y);
-    gfx->fillCircle(x, y, 6, WHITE);
-    gfx->flush();
+    gfx->fillCircle(x, y, 6, RGB565_WHITE);
+    dirty = true;
   }
-  delay(20);
+  if (dirty && millis() - lastFlush >= 30) {
+    gfx->flush();
+    lastFlush = millis();
+    dirty = false;
+  }
+  delay(5);
 }
