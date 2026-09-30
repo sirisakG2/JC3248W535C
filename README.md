@@ -37,6 +37,7 @@ Setup and spec notes for the Guition **JC3248W535C_I_Y** — ESP32-S3 3.5" capac
 | [`examples/game2048`](examples/game2048/main.cpp) | 2048: swipe to slide/merge tiles, score + best, one-step UNDO, win screen with keep-going. Board, score and best are saved in flash and resume after power-off. |
 | [`examples/snake`](examples/snake/main.cpp) | Snake on a 20x20 field: on-screen arrow pad (instant turns; swiping also works), PAUSE/NEW, speed ramps from 200 ms to 90 ms per step, best score saved in flash. |
 | [`examples/connect4`](examples/connect4/main.cpp) | Connect Four (7x6): tap a column, falling-disc animation, win highlight. Modes: CPU Hard (negamax + alpha-beta, depth 7), CPU Easy, 2 Players. Scores saved in flash. |
+| [`examples/tetris`](examples/tetris/main.cpp) | Tetris: 10x20 field, 7-bag randomiser, ghost piece, next preview, levels, on-screen buttons with hold-to-repeat, best score in flash. Touch is debounced (needs a full lift between presses). |
 | [`examples/lvgl-basic`](examples/lvgl-basic/main.cpp) | Minimal LVGL 9 demo: button counter, slider, switch, arc. Good starting point for new UIs. |
 
 ## Build
@@ -54,6 +55,7 @@ pio run -e tictactoe     -t upload --upload-port /dev/cu.usbmodem101
 pio run -e game2048      -t upload --upload-port /dev/cu.usbmodem101
 pio run -e snake         -t upload --upload-port /dev/cu.usbmodem101
 pio run -e connect4      -t upload --upload-port /dev/cu.usbmodem101
+pio run -e tetris        -t upload --upload-port /dev/cu.usbmodem101
 pio run -e lvgl-basic    -t upload --upload-port /dev/cu.usbmodem101
 pio device monitor
 ```
@@ -86,6 +88,7 @@ Both samples use LVGL 9 and are verified on hardware (touch works, keyboard is u
 - LVGL renders in PARTIAL mode into a 40-line internal-RAM buffer; `flush_cb` copies each area into the `Arduino_Canvas` and calls `gfx->flush()` once on the last area of a frame.
 - On-screen keyboard: make it tall (320px) with a 20pt key font, or keys are too small to hit.
 - Games: swipe-only controls are unreliable on this screen (a full-frame redraw can miss part of a swipe); on-screen buttons that act on press feel much better.
+- Touch: the controller drops out briefly while a finger is down. For button UIs, require ~6 empty reads before treating it as a release, and a full lift between presses, or one tap registers as several.
 - Touch is exposed to LVGL as a pointer indev via `touch_cb`.
 
 ## Notes / gotchas
