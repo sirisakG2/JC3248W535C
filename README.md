@@ -33,6 +33,7 @@ Setup and spec notes for the Guition **JC3248W535C_I_Y** — ESP32-S3 3.5" capac
 | [`examples/media-player`](examples/media-player/main.cpp) | Photo frame + MJPEG video player from a microSD card. Reads `/pic/*.jpg` and `/mjpeg/*.mjpeg` (also `/photos`, `/video`). Landscape media (e.g. 480x320) is rotated 90° to fill the portrait screen. Tap = pause, swipe = next/prev, long-press = switch photos/video. |
 | [`examples/music-player`](examples/music-player/main.cpp) | MP3/WAV/FLAC/AAC player from `/music` on the SD card with an LVGL track list, prev/play/next, volume and progress bar; auto-advances. **Audio output UNVERIFIED** (no speaker was connected when tested; UI and track scan work). |
 | [`examples/paint`](examples/paint/main.cpp) | Finger-paint app: 8 colours incl. eraser, brush size, clear, and SAVE to `/paint/paintN.bmp` on the SD card (16-bit RGB565 BMP, opens on Mac/PC). Screen display/touch verified; BMP save not yet checked on a computer. |
+| [`examples/tictactoe`](examples/tictactoe/main.cpp) | Tic-tac-toe with 5 modes: CPU Hard (unbeatable minimax), CPU Easy, 2 Players, **Forever 2P** and **Forever CPU** (max 3 marks per player - the oldest vanishes on a 4th placement, shown faded - plus a 4 s per-move countdown, `TURN_MS`). Scores saved in flash. |
 | [`examples/lvgl-basic`](examples/lvgl-basic/main.cpp) | Minimal LVGL 9 demo: button counter, slider, switch, arc. Good starting point for new UIs. |
 
 ## Build
@@ -46,6 +47,7 @@ pio run -e weather-clock -t upload --upload-port /dev/cu.usbmodem101
 pio run -e media-player  -t upload --upload-port /dev/cu.usbmodem101
 pio run -e music-player  -t upload --upload-port /dev/cu.usbmodem101
 pio run -e paint         -t upload --upload-port /dev/cu.usbmodem101
+pio run -e tictactoe     -t upload --upload-port /dev/cu.usbmodem101
 pio run -e lvgl-basic    -t upload --upload-port /dev/cu.usbmodem101
 pio device monitor
 ```
