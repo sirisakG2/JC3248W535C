@@ -25,18 +25,27 @@ Setup and spec notes for the Guition **JC3248W535C_I_Y** — ESP32-S3 3.5" capac
 | Touch SDA / SCL | 4 / 8 |
 | Touch INT | 3 |
 
+## Samples
+
+| Sample | What it is |
+|---|---|
+| [`examples/weather-clock`](examples/weather-clock/main.cpp) | WiFi clock + weather dashboard (NTP time, Open-Meteo weather, 3-day forecast). Settings tab has a WiFi scanner/connect with on-screen keyboard, city search, 12/24h switch and brightness. WiFi credentials are stored in on-board flash only, never in the repo. |
+| [`examples/lvgl-basic`](examples/lvgl-basic/main.cpp) | Minimal LVGL 9 demo: button counter, slider, switch, arc. Good starting point for new UIs. |
+
 ## Build
 
 PlatformIO with the pioarduino platform (Arduino core 3.x is required by
 GFX Library for Arduino; the stock `espressif32` platform only has core 2.x).
+Each sample is a PlatformIO environment:
 
 ```
-pio run -t upload --upload-port /dev/cu.usbmodem101
+pio run -e weather-clock -t upload --upload-port /dev/cu.usbmodem101
+pio run -e lvgl-basic    -t upload --upload-port /dev/cu.usbmodem101
 pio device monitor
 ```
 
-`src/main.cpp` draws RGB bands plus text and paints a dot at each touch point,
-logging coordinates over serial.
+To add a sample, create `examples/<name>/main.cpp` and an `[env:<name>]` entry
+in `platformio.ini` with `build_src_filter = -<*> +<<name>/>`.
 
 ## Status
 
@@ -44,10 +53,11 @@ Verified on hardware: display, touch and pin mapping all work; touch response is
 
 ## LVGL demo
 
-`src/main.cpp` is an LVGL 9 demo (button counter, brightness slider, switch, arc). Verified on hardware: all touch works.
+Both samples use LVGL 9 and are verified on hardware (touch works, keyboard is usable).
 
 - Config is passed as build flags in `platformio.ini` (`-DLV_CONF_SKIP` plus a few `LV_*` defines), so there is no `lv_conf.h`.
 - LVGL renders in PARTIAL mode into a 40-line internal-RAM buffer; `flush_cb` copies each area into the `Arduino_Canvas` and calls `gfx->flush()` once on the last area of a frame.
+- On-screen keyboard: make it tall (320px) with a 20pt key font, or keys are too small to hit.
 - Touch is exposed to LVGL as a pointer indev via `touch_cb`.
 
 ## Notes / gotchas
