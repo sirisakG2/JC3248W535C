@@ -35,6 +35,7 @@ Setup and spec notes for the Guition **JC3248W535C_I_Y** — ESP32-S3 3.5" capac
 | [`examples/paint`](examples/paint/main.cpp) | Finger-paint app: 8 colours incl. eraser, brush size, clear, and SAVE to `/paint/paintN.bmp` on the SD card (16-bit RGB565 BMP, opens on Mac/PC). Screen display/touch verified; BMP save not yet checked on a computer. |
 | [`examples/tictactoe`](examples/tictactoe/main.cpp) | Tic-tac-toe with 5 modes: CPU Hard (unbeatable minimax), CPU Easy, 2 Players, **Forever 2P** and **Forever CPU** (max 3 marks per player - the oldest vanishes on a 4th placement, shown faded - plus a 4 s per-move countdown, `TURN_MS`). Scores saved in flash. |
 | [`examples/game2048`](examples/game2048/main.cpp) | 2048: swipe to slide/merge tiles, score + best, one-step UNDO, win screen with keep-going. Board, score and best are saved in flash and resume after power-off. |
+| [`examples/snake`](examples/snake/main.cpp) | Snake on a 20x20 field: on-screen arrow pad (instant turns; swiping also works), PAUSE/NEW, speed ramps from 200 ms to 90 ms per step, best score saved in flash. |
 | [`examples/lvgl-basic`](examples/lvgl-basic/main.cpp) | Minimal LVGL 9 demo: button counter, slider, switch, arc. Good starting point for new UIs. |
 
 ## Build
@@ -50,6 +51,7 @@ pio run -e music-player  -t upload --upload-port /dev/cu.usbmodem101
 pio run -e paint         -t upload --upload-port /dev/cu.usbmodem101
 pio run -e tictactoe     -t upload --upload-port /dev/cu.usbmodem101
 pio run -e game2048      -t upload --upload-port /dev/cu.usbmodem101
+pio run -e snake         -t upload --upload-port /dev/cu.usbmodem101
 pio run -e lvgl-basic    -t upload --upload-port /dev/cu.usbmodem101
 pio device monitor
 ```
@@ -81,6 +83,7 @@ Both samples use LVGL 9 and are verified on hardware (touch works, keyboard is u
 - Config is passed as build flags in `platformio.ini` (`-DLV_CONF_SKIP` plus a few `LV_*` defines), so there is no `lv_conf.h`.
 - LVGL renders in PARTIAL mode into a 40-line internal-RAM buffer; `flush_cb` copies each area into the `Arduino_Canvas` and calls `gfx->flush()` once on the last area of a frame.
 - On-screen keyboard: make it tall (320px) with a 20pt key font, or keys are too small to hit.
+- Games: swipe-only controls are unreliable on this screen (a full-frame redraw can miss part of a swipe); on-screen buttons that act on press feel much better.
 - Touch is exposed to LVGL as a pointer indev via `touch_cb`.
 
 ## Notes / gotchas
