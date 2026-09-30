@@ -36,6 +36,7 @@ Setup and spec notes for the Guition **JC3248W535C_I_Y** — ESP32-S3 3.5" capac
 | [`examples/tictactoe`](examples/tictactoe/main.cpp) | Tic-tac-toe with 5 modes: CPU Hard (unbeatable minimax), CPU Easy, 2 Players, **Forever 2P** and **Forever CPU** (max 3 marks per player - the oldest vanishes on a 4th placement, shown faded - plus a 4 s per-move countdown, `TURN_MS`). Scores saved in flash. |
 | [`examples/game2048`](examples/game2048/main.cpp) | 2048: swipe to slide/merge tiles, score + best, one-step UNDO, win screen with keep-going. Board, score and best are saved in flash and resume after power-off. |
 | [`examples/snake`](examples/snake/main.cpp) | Snake on a 20x20 field: on-screen arrow pad (instant turns; swiping also works), PAUSE/NEW, speed ramps from 200 ms to 90 ms per step, best score saved in flash. |
+| [`examples/connect4`](examples/connect4/main.cpp) | Connect Four (7x6): tap a column, falling-disc animation, win highlight. Modes: CPU Hard (negamax + alpha-beta, depth 7), CPU Easy, 2 Players. Scores saved in flash. |
 | [`examples/lvgl-basic`](examples/lvgl-basic/main.cpp) | Minimal LVGL 9 demo: button counter, slider, switch, arc. Good starting point for new UIs. |
 
 ## Build
@@ -52,6 +53,7 @@ pio run -e paint         -t upload --upload-port /dev/cu.usbmodem101
 pio run -e tictactoe     -t upload --upload-port /dev/cu.usbmodem101
 pio run -e game2048      -t upload --upload-port /dev/cu.usbmodem101
 pio run -e snake         -t upload --upload-port /dev/cu.usbmodem101
+pio run -e connect4      -t upload --upload-port /dev/cu.usbmodem101
 pio run -e lvgl-basic    -t upload --upload-port /dev/cu.usbmodem101
 pio device monitor
 ```
