@@ -31,6 +31,7 @@ Setup and spec notes for the Guition **JC3248W535C_I_Y** — ESP32-S3 3.5" capac
 |---|---|
 | [`examples/weather-clock`](examples/weather-clock/main.cpp) | WiFi clock + weather dashboard (NTP time, Open-Meteo weather, 3-day forecast). Settings tab has a WiFi scanner/connect with on-screen keyboard, city search, 12/24h switch and brightness. WiFi credentials are stored in on-board flash only, never in the repo. |
 | [`examples/media-player`](examples/media-player/main.cpp) | Photo frame + MJPEG video player from a microSD card. Reads `/pic/*.jpg` and `/mjpeg/*.mjpeg` (also `/photos`, `/video`). Landscape media (e.g. 480x320) is rotated 90° to fill the portrait screen. Tap = pause, swipe = next/prev, long-press = switch photos/video. |
+| [`examples/music-player`](examples/music-player/main.cpp) | MP3/WAV/FLAC/AAC player from `/music` on the SD card with an LVGL track list, prev/play/next, volume and progress bar; auto-advances. **Audio output UNVERIFIED** (no speaker was connected when tested; UI and track scan work). |
 | [`examples/lvgl-basic`](examples/lvgl-basic/main.cpp) | Minimal LVGL 9 demo: button counter, slider, switch, arc. Good starting point for new UIs. |
 
 ## Build
@@ -42,6 +43,7 @@ Each sample is a PlatformIO environment:
 ```
 pio run -e weather-clock -t upload --upload-port /dev/cu.usbmodem101
 pio run -e media-player  -t upload --upload-port /dev/cu.usbmodem101
+pio run -e music-player  -t upload --upload-port /dev/cu.usbmodem101
 pio run -e lvgl-basic    -t upload --upload-port /dev/cu.usbmodem101
 pio device monitor
 ```
@@ -58,6 +60,13 @@ Verified on hardware: display, touch and pin mapping all work; touch response is
 Verified pins (own SPI3/HSPI bus, separate from the display's SPI2): CS=10, MOSI=11, SCK=12, MISO=13. Use `SPIClass sdSpi(HSPI)`.
 Video files are raw concatenated JPEG frames (`.mjpeg`), e.g. made with
 `ffmpeg -i in.mp4 -vf "scale=480:320" -q:v 6 -r 20 out.mjpeg`.
+
+## Audio (unverified)
+
+The board has **no built-in speaker**: it has a 2-pin JST 1.25 connector for an external 4-8 ohm speaker, driven by an NS4168 mono I2S amp.
+Pins used (from an ESPHome config for this board, not yet confirmed on hardware): BCLK=42, LRC=2, DOUT=41.
+Uses `schreibfaul1/ESP32-audioI2S`, which needs `-DCORE_DEBUG_LEVEL=0` in PlatformIO. The audio loop runs on its own core so UI redraws do not cause dropouts.
+The UI font has no CJK glyphs, so non-ASCII track names are shown as "Track N".
 
 ## LVGL demo
 
