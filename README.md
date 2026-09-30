@@ -30,6 +30,7 @@ Setup and spec notes for the Guition **JC3248W535C_I_Y** — ESP32-S3 3.5" capac
 | Sample | What it is |
 |---|---|
 | [`examples/weather-clock`](examples/weather-clock/main.cpp) | WiFi clock + weather dashboard (NTP time, Open-Meteo weather, 3-day forecast). Settings tab has a WiFi scanner/connect with on-screen keyboard, city search, 12/24h switch and brightness. WiFi credentials are stored in on-board flash only, never in the repo. |
+| [`examples/media-player`](examples/media-player/main.cpp) | Photo frame + MJPEG video player from a microSD card. Reads `/pic/*.jpg` and `/mjpeg/*.mjpeg` (also `/photos`, `/video`). Landscape media (e.g. 480x320) is rotated 90° to fill the portrait screen. Tap = pause, swipe = next/prev, long-press = switch photos/video. |
 | [`examples/lvgl-basic`](examples/lvgl-basic/main.cpp) | Minimal LVGL 9 demo: button counter, slider, switch, arc. Good starting point for new UIs. |
 
 ## Build
@@ -40,6 +41,7 @@ Each sample is a PlatformIO environment:
 
 ```
 pio run -e weather-clock -t upload --upload-port /dev/cu.usbmodem101
+pio run -e media-player  -t upload --upload-port /dev/cu.usbmodem101
 pio run -e lvgl-basic    -t upload --upload-port /dev/cu.usbmodem101
 pio device monitor
 ```
@@ -50,6 +52,12 @@ in `platformio.ini` with `build_src_filter = -<*> +<<name>/>`.
 ## Status
 
 Verified on hardware: display, touch and pin mapping all work; touch response is fast.
+
+## microSD
+
+Verified pins (own SPI3/HSPI bus, separate from the display's SPI2): CS=10, MOSI=11, SCK=12, MISO=13. Use `SPIClass sdSpi(HSPI)`.
+Video files are raw concatenated JPEG frames (`.mjpeg`), e.g. made with
+`ffmpeg -i in.mp4 -vf "scale=480:320" -q:v 6 -r 20 out.mjpeg`.
 
 ## LVGL demo
 
