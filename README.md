@@ -39,6 +39,7 @@ Setup and spec notes for the Guition **JC3248W535C_I_Y** — ESP32-S3 3.5" capac
 | [`examples/connect4`](examples/connect4/main.cpp) | Connect Four (7x6): tap a column, falling-disc animation, win highlight. Modes: CPU Hard (negamax + alpha-beta, depth 7), CPU Easy, 2 Players. Scores saved in flash. |
 | [`examples/tetris`](examples/tetris/main.cpp) | Tetris: 10x20 field, 7-bag randomiser, ghost piece, next preview, levels, on-screen buttons with hold-to-repeat, best score in flash. Touch is debounced (needs a full lift between presses). |
 | [`examples/minesweeper`](examples/minesweeper/main.cpp) | Minesweeper: Easy 8x10 / Medium 10x12 / Hard 12x14, safe first tap, flood-fill, chording, long-press or DIG/FLAG toggle to flag, timer, best time per level saved in flash. |
+| [`examples/memory`](examples/memory/main.cpp) | Memory Match: 12 drawn symbols, Easy 3x4 / Medium 4x5 / Hard 4x6, flip animation, moves + timer, fewest moves per level saved in flash. |
 | [`examples/lvgl-basic`](examples/lvgl-basic/main.cpp) | Minimal LVGL 9 demo: button counter, slider, switch, arc. Good starting point for new UIs. |
 
 ## Build
@@ -58,6 +59,7 @@ pio run -e snake         -t upload --upload-port /dev/cu.usbmodem101
 pio run -e connect4      -t upload --upload-port /dev/cu.usbmodem101
 pio run -e tetris        -t upload --upload-port /dev/cu.usbmodem101
 pio run -e minesweeper   -t upload --upload-port /dev/cu.usbmodem101
+pio run -e memory        -t upload --upload-port /dev/cu.usbmodem101
 pio run -e lvgl-basic    -t upload --upload-port /dev/cu.usbmodem101
 pio device monitor
 ```
