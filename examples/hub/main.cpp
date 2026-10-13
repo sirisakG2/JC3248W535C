@@ -3,6 +3,7 @@
 // Games return here by holding the top-left corner (1.5 s) or the BOOT button (0.7 s).
 #include <Arduino.h>
 #include <Wire.h>
+#include <Preferences.h>
 #include <Arduino_GFX_Library.h>
 #include <esp_ota_ops.h>
 #include <esp_partition.h>
@@ -27,11 +28,45 @@ const Game GAMES[8] = {
   {"Memory", 7, 20, 110, 120},     {"Paint", 8, 140, 50, 80},
 };
 const int NGAMES = 8;
-const int TILE_X0 = 10, TILE_Y0 = 70, TW = 146, TH = 90, TG = 8;
+const int TILE_X0 = 10, TILE_Y0 = 68, TW = 146, TH = 96, TG = 6;
 
 bool installed[NGAMES];
 uint16_t C_BG, C_TXT, C_DIM;
 uint16_t tileCol[NGAMES];
+String subtitle[NGAMES];             // subtitle under each icon (best score / record)
+int lastPlayed = -1;
+Preferences hubPrefs;
+
+// Read a game's saved best score straight from its own NVS namespace (read-only).
+static String statFor(int i) {
+  static const char *LV[3] = {"Easy", "Med", "Hard"};
+  Preferences p;
+  char b[40], k[8];
+  const char *none = "No score";
+  switch (i) {
+    case 0:  if (!p.begin("ttt", true)) return none;
+             snprintf(b, sizeof b, "X %d  O %d", p.getInt("x", 0), p.getInt("o", 0)); break;
+    case 1:  if (!p.begin("g2048", true) || !p.getInt("best", 0)) return none;
+             snprintf(b, sizeof b, "Best %d", p.getInt("best", 0)); break;
+    case 2:  if (!p.begin("snake", true) || !p.getInt("best", 0)) return none;
+             snprintf(b, sizeof b, "Best %d", p.getInt("best", 0)); break;
+    case 3:  if (!p.begin("c4", true)) return none;
+             snprintf(b, sizeof b, "R %d  Y %d", p.getInt("s1", 0), p.getInt("s2", 0)); break;
+    case 4:  if (!p.begin("tetris", true) || !p.getInt("best", 0)) return none;
+             snprintf(b, sizeof b, "Best %d", p.getInt("best", 0)); break;
+    case 5: { if (!p.begin("mines", true)) return none;
+              int l = constrain(p.getInt("lvl", 0), 0, 2); snprintf(k, sizeof k, "best%d", l);
+              int t = p.getInt(k, 0); if (!t) return none;
+              snprintf(b, sizeof b, "%s: %ds", LV[l], t); break; }
+    case 6: { if (!p.begin("memory", true)) return none;
+              int l = constrain(p.getInt("lvl", 0), 0, 2); snprintf(k, sizeof k, "bm%d", l);
+              int m = p.getInt(k, 0); if (!m) return none;
+              snprintf(b, sizeof b, "%s: %d mv", LV[l], m); break; }
+    default: return "Draw & save";
+  }
+  p.end();
+  return String(b);
+}
 
 static const esp_partition_t *slotPart(int slot) {
   return esp_partition_find_first(ESP_PARTITION_TYPE_APP, (esp_partition_subtype_t)(ESP_PARTITION_SUBTYPE_APP_OTA_MIN + slot), NULL);
@@ -59,10 +94,10 @@ static void icon(int i, int cx, int cy) {
       gfx->drawLine(cx + 12, cy + 12, cx + 22, cy + 22, RGB565_RED); gfx->drawLine(cx + 22, cy + 12, cx + 12, cy + 22, RGB565_RED);
       break;
     case 1:   // 2048
-      gfx->fillRoundRect(cx - 28, cy - 22, 26, 26, 4, gfx->color565(238, 228, 218)); centerText("2", cx - 15, cy - 9, 2, gfx->color565(119, 110, 101));
-      gfx->fillRoundRect(cx + 2, cy - 22, 26, 26, 4, gfx->color565(242, 177, 121));  centerText("8", cx + 15, cy - 9, 2, W);
-      gfx->fillRoundRect(cx - 28, cy + 6, 26, 26, 4, gfx->color565(246, 124, 95));   centerText("4", cx - 15, cy + 19, 2, W);
-      gfx->fillRoundRect(cx + 2, cy + 6, 26, 26, 4, gfx->color565(237, 194, 46));    centerText("16", cx + 15, cy + 19, 1, W);
+      gfx->fillRoundRect(cx - 24, cy - 20, 22, 22, 4, gfx->color565(238, 228, 218)); centerText("2", cx - 13, cy - 9, 2, gfx->color565(119, 110, 101));
+      gfx->fillRoundRect(cx + 2, cy - 20, 22, 22, 4, gfx->color565(242, 177, 121));  centerText("8", cx + 13, cy - 9, 2, W);
+      gfx->fillRoundRect(cx - 24, cy + 4, 22, 22, 4, gfx->color565(246, 124, 95));   centerText("4", cx - 13, cy + 15, 2, W);
+      gfx->fillRoundRect(cx + 2, cy + 4, 22, 22, 4, gfx->color565(237, 194, 46));    centerText("16", cx + 13, cy + 15, 1, W);
       break;
     case 2:   // snake
       for (int k = 0; k < 6; k++) gfx->fillRoundRect(cx - 28 + k * 10, cy + ((k & 1) ? -8 : 6), 10, 10, 3, k == 5 ? RGB565_GREENYELLOW : gfx->color565(70, 200, 80));
@@ -100,21 +135,31 @@ static void icon(int i, int cx, int cy) {
   }
 }
 
-static void render(int pressed = -1) {
-  gfx->fillScreen(C_BG);
-  centerText("GAMES", SCR_W / 2, 28, 4, C_TXT);
-  centerText("In a game: hold top-left corner or BOOT to return", SCR_W / 2, 56, 1, C_DIM);
-  for (int i = 0; i < NGAMES; i++) {
-    int x, y;
-    tileRect(i, x, y);
-    gfx->fillRoundRect(x, y, TW, TH, 10, i == pressed ? RGB565_WHITE : tileCol[i]);
-    if (i == pressed) gfx->fillRoundRect(x + 3, y + 3, TW - 6, TH - 6, 8, tileCol[i]);
-    icon(i, x + TW / 2, y + 36);
-    centerText(GAMES[i].name, x + TW / 2, y + TH - 14, 2, installed[i] ? C_TXT : C_DIM);
-    if (!installed[i]) {                                   // dim tiles whose slot holds no app
-      centerText("not installed", x + TW / 2, y + 12, 1, RGB565_YELLOW);
-    }
+static uint16_t shade(int i, float f) {            // darker/lighter variant of a tile colour
+  return gfx->color565(constrain((int)(GAMES[i].r * f), 0, 255), constrain((int)(GAMES[i].g * f), 0, 255), constrain((int)(GAMES[i].b * f), 0, 255));
+}
+
+static void drawTile(int i) {
+  int x, y;
+  tileRect(i, x, y);
+  gfx->fillRoundRect(x, y, TW, TH, 12, tileCol[i]);
+  gfx->fillRoundRect(x, y + TH - 24, TW, 24, 12, shade(i, 0.55f));          // darker label strip
+  gfx->fillRect(x, y + TH - 24, TW, 12, shade(i, 0.55f));
+  if (i == lastPlayed) {                                                    // last played = white outline
+    gfx->drawRoundRect(x, y, TW, TH, 12, RGB565_WHITE);
+    gfx->drawRoundRect(x + 1, y + 1, TW - 2, TH - 2, 11, RGB565_WHITE);
   }
+  icon(i, x + TW / 2, y + 26);
+  centerText(subtitle[i].c_str(), x + TW / 2, y + TH - 36, 2, gfx->color565(245, 245, 245));
+  centerText(GAMES[i].name, x + TW / 2, y + TH - 12, 2, installed[i] ? C_TXT : C_DIM);
+  if (!installed[i]) centerText("not installed", x + TW / 2, y + 10, 1, RGB565_YELLOW);
+}
+
+static void render() {
+  gfx->fillScreen(C_BG);
+  centerText("GAMES", SCR_W / 2, 26, 4, C_TXT);
+  centerText("In a game: hold the top-left corner to return", SCR_W / 2, 54, 1, C_DIM);
+  for (int i = 0; i < NGAMES; i++) drawTile(i);
   gfx->flush();
 }
 
@@ -143,13 +188,26 @@ static int tileAt(int x, int y) {
 }
 
 static void launch(int i) {
-  render(i);
   const esp_partition_t *p = slotPart(GAMES[i].slot);
   if (!p || !installed[i]) return;
-  centerText("Loading...", SCR_W / 2, 458, 2, C_TXT);
+  int x, y;
+  tileRect(i, x, y);
+  for (int f = 1; f <= 5; f++) {                          // tile grows to fill the screen
+    float t = f / 5.0f;
+    int cx = x + (int)((0 - x) * t), cy = y + (int)((0 - y) * t);
+    int cw = TW + (int)((SCR_W - TW) * t), ch = TH + (int)((SCR_H - TH) * t);
+    gfx->fillRoundRect(cx, cy, cw, ch, 12, tileCol[i]);
+    gfx->drawRoundRect(cx, cy, cw, ch, 12, RGB565_WHITE);
+    gfx->flush();
+  }
+  icon(i, SCR_W / 2, SCR_H / 2 - 20);
+  centerText(GAMES[i].name, SCR_W / 2, SCR_H / 2 + 50, 3, C_TXT);
+  centerText("Loading...", SCR_W / 2, SCR_H / 2 + 90, 2, C_DIM);
   gfx->flush();
+  hubPrefs.putInt("last", i);
   if (esp_ota_set_boot_partition(p) == ESP_OK) { delay(150); esp_restart(); }
   Serial.println("set_boot_partition failed");
+  render();
 }
 
 void setup() {
@@ -170,8 +228,11 @@ void setup() {
     const esp_partition_t *p = slotPart(GAMES[i].slot);
     esp_app_desc_t d;
     installed[i] = p && esp_ota_get_partition_description(p, &d) == ESP_OK;
+    subtitle[i] = statFor(i);
     Serial.printf("slot %d %-12s %s\n", GAMES[i].slot, GAMES[i].name, installed[i] ? "installed" : "MISSING");
   }
+  hubPrefs.begin("hub", false);
+  lastPlayed = hubPrefs.getInt("last", -1);
   render();
 }
 
@@ -184,7 +245,6 @@ void loop() {
     if (!touching) { touching = true; int t = tileAt(x, y); if (t >= 0) launch(t); }
   } else if (touching && ++misses >= 6) {
     touching = false;
-    render();                                           // clear any pressed highlight
   }
   delay(5);
 }

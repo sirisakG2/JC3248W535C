@@ -75,7 +75,9 @@ static void drawToolbar() {
   gfx->fillCircle(2 * SW + 20, y2 + 20, brush, colorIdx == 1 ? RGB565_DARKGREY : PALETTE[colorIdx]);
   gfx->setTextSize(2);
   gfx->drawRect(3 * SW + 3, y2 + 3, SW * 2 - 6, SW - 6, RGB565_WHITE);      gfx->setCursor(3 * SW + 16, y2 + 12); gfx->print("CLR");
-  gfx->drawRect(5 * SW + 3, y2 + 3, SW * 3 - 6, SW - 6, RGB565_GREEN);     gfx->setCursor(5 * SW + 32, y2 + 12); gfx->print("SAVE");
+  gfx->drawRect(5 * SW + 3, y2 + 3, SW * 2 - 6, SW - 6, RGB565_GREEN);     gfx->setCursor(5 * SW + 13, y2 + 12); gfx->print("SAVE");
+  gfx->drawRect(7 * SW + 3, y2 + 3, SW - 6, SW - 6, RGB565_YELLOW);        // back to the game hub (two taps)
+  gfx->setTextSize(1); gfx->setTextColor(RGB565_YELLOW); gfx->setCursor(7 * SW + 8, y2 + 16); gfx->print("HOME");
   if (millis() < msgUntil) { gfx->setTextSize(1); gfx->setTextColor(RGB565_YELLOW); gfx->setCursor(4, SCR_H - 10); gfx->print(msg); }
 }
 
@@ -117,9 +119,13 @@ static void toolbarTap(int x, int y) {
     if (x < SW) brush = max(1, brush - 1);
     else if (x < 2 * SW) brush = min(20, brush + 1);
     else if (x >= 3 * SW && x < 5 * SW) { gfx->fillRect(0, 0, SCR_W, CANVAS_H, RGB565_WHITE); note("Cleared"); }
-    else if (x >= 5 * SW) {
+    else if (x >= 5 * SW && x < 7 * SW) {
       String name;
       note(saveBmp(name) ? "Saved " + name : (sdOk ? "Save failed" : "No SD card"));
+    } else if (x >= 7 * SW) {                                   // HOME: tap twice so a drawing isn't lost by accident
+      static uint32_t armedUntil = 0;
+      if (millis() < armedUntil) hubGoHome();
+      else { armedUntil = millis() + 2500; note("Tap HOME again to exit (drawing is lost)"); }
     }
   }
   drawToolbar();
