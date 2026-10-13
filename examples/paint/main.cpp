@@ -1,11 +1,13 @@
 // Touch paint app for the JC3248W535C.
 // Draw with your finger; top toolbar row = colours (2nd swatch is the eraser),
 // second row = brush size -/+, CLR, SAVE. SAVE writes /paint/paintN.bmp to the SD card.
+#define HUB_NO_CORNER   // the top-left corner is drawing area here; BOOT button still goes home
 #include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
 #include <SD.h>
 #include <Arduino_GFX_Library.h>
+#include "../common/hub_home.h"
 
 #define GFX_BL 1
 #define TOUCH_SDA 4
@@ -36,7 +38,7 @@ int brush = 4;                // radius in px
 String msg = "";
 uint32_t msgUntil = 0;
 
-static bool readTouch(int &x, int &y) {
+static bool readTouchRaw(int &x, int &y) {
   static const uint8_t cmd[8] = {0xB5, 0xAB, 0xA5, 0x5A, 0, 0, 0, 8};
   uint8_t b[8];
   Wire.beginTransmission(TOUCH_ADDR);
@@ -48,6 +50,13 @@ static bool readTouch(int &x, int &y) {
   x = ((b[2] & 0x0F) << 8) | b[3];
   y = ((b[4] & 0x0F) << 8) | b[5];
   return true;
+}
+
+// touch read that also watches for the "go back to the hub" gesture
+static bool readTouch(int &x, int &y) {
+  bool t = readTouchRaw(x, y);
+  hubTouchNote(t, t ? x : 0, t ? y : 0);
+  return t;
 }
 
 // ---------------------------------------------------------------- toolbar

@@ -25,6 +25,23 @@ Setup and spec notes for the Guition **JC3248W535C_I_Y** — ESP32-S3 3.5" capac
 | Touch SDA / SCL | 4 / 8 |
 | Touch INT | 3 |
 
+## Game hub
+
+`examples/hub` is a launcher with a tile for each game. Every game stays its own app in its own flash slot
+(`hub_partitions.csv`: `ota_0` = launcher, `ota_1..ota_8` = games), so the games are unchanged apart from a shared
+`examples/common/hub_home.h`. Tapping a tile sets that slot as the boot partition and restarts.
+
+- **Back to the hub:** hold the top-left corner for 1.5 s, or hold the BOOT button for 0.7 s (Paint: BOOT only, since the
+  corner is drawing area). Games also point the next boot back at the hub as soon as they start, so a reset or power
+  cycle always lands on the hub.
+- **Install everything:** `tools/flash_hub.sh` builds and flashes the launcher, bootloader, partition table and all games
+  (auto-detects the `/dev/cu.usbmodem*` port).
+- **Add a game:** add an env in `platformio.ini`, a tile in `examples/hub/main.cpp`, its name in `tools/flash_hub.sh`,
+  and include `hub_home.h` (wrap `readTouch` as the other games do). Slot offsets are `0x1B0000 + (N-1) * 0x100000`.
+- Flashing a single sample on its own (`pio run -e <name> -t upload`) overwrites the launcher in `ota_0`; run
+  `tools/flash_hub.sh` to restore the hub. The launcher slot is 1.6 MB, so any one sample fits.
+- esptool needs PlatformIO's own Python (`~/.platformio/penv/bin/python`); the system Python lacks its dependencies.
+
 ## Samples
 
 | Sample | What it is |

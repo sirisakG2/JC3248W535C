@@ -1,0 +1,16 @@
+# Game hub layout (16MB flash). ota_0 = launcher (roomy enough for any single sample),
+# ota_1..ota_10 = one game each. Games are flashed by tools/flash_hub.sh.
+# Name,   Type, SubType, Offset,   Size
+nvs,      data, nvs,     0x9000,   0x5000
+otadata,  data, ota,     0xe000,   0x2000
+app0,     app,  ota_0,   0x10000,  0x1A0000
+app1,     app,  ota_1,   0x1B0000, 0x100000
+app2,     app,  ota_2,   0x2B0000, 0x100000
+app3,     app,  ota_3,   0x3B0000, 0x100000
+app4,     app,  ota_4,   0x4B0000, 0x100000
+app5,     app,  ota_5,   0x5B0000, 0x100000
+app6,     app,  ota_6,   0x6B0000, 0x100000
+app7,     app,  ota_7,   0x7B0000, 0x100000
+app8,     app,  ota_8,   0x8B0000, 0x100000
+app9,     app,  ota_9,   0x9B0000, 0x100000
+app10,    app,  ota_10,  0xAB0000, 0x100000

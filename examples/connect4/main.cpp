@@ -4,6 +4,7 @@
 #include <Wire.h>
 #include <Preferences.h>
 #include <Arduino_GFX_Library.h>
+#include "../common/hub_home.h"
 
 #define GFX_BL 1
 #define TOUCH_SDA 4
@@ -250,7 +251,7 @@ static void handleTap(int x, int y) {
 }
 
 // ---------------------------------------------------------------- touch
-static bool readTouch(int &x, int &y) {
+static bool readTouchRaw(int &x, int &y) {
   static const uint8_t cmd[8] = {0xB5, 0xAB, 0xA5, 0x5A, 0, 0, 0, 8};
   uint8_t d[8];
   Wire.beginTransmission(TOUCH_ADDR);
@@ -262,6 +263,13 @@ static bool readTouch(int &x, int &y) {
   x = ((d[2] & 0x0F) << 8) | d[3];
   y = ((d[4] & 0x0F) << 8) | d[5];
   return true;
+}
+
+// touch read that also watches for the "go back to the hub" gesture
+static bool readTouch(int &x, int &y) {
+  bool t = readTouchRaw(x, y);
+  hubTouchNote(t, t ? x : 0, t ? y : 0);
+  return t;
 }
 
 void setup() {
