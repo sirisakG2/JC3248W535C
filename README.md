@@ -1,5 +1,7 @@
 # JC3248W535C
 
+> **Full product specification:** [`docs/index.html`](docs/index.html) (single self-contained page: hardware, pin map, firmware catalog, hub architecture, verification status). Open it locally in a browser, or enable GitHub Pages on the `/docs` folder to host it.
+
 Setup and spec notes for the Guition **JC3248W535C_I_Y** — ESP32-S3 3.5" capacitive touch display module.
 
 ## Specs

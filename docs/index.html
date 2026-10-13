@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JC3248W535C Product Specification</title>
+<meta name="description" content="Product specification for the JC3248W535C ESP32-S3 3.5-inch touch display module and its game / media firmware suite.">
+<style>
+  :root {
+    --bg: #f6f7f9; --surface: #ffffff; --surface-2: #eef1f5; --text: #14181f; --muted: #5a6577;
+    --border: #d9dee6; --accent: #1f6feb; --ok: #1a7f37; --ok-bg: #dafbe1; --warn: #9a6700; --warn-bg: #fff4cc;
+    --code-bg: #eef1f5; --shadow: 0 1px 2px rgba(20,24,31,.06), 0 4px 16px rgba(20,24,31,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1218; --surface: #161b23; --surface-2: #1d242e; --text: #e8ecf2; --muted: #9aa6b8;
+      --border: #2a3340; --accent: #5aa2ff; --ok: #56d364; --ok-bg: #12301b; --warn: #e3b341; --warn-bg: #3a2f10;
+      --code-bg: #1d242e; --shadow: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1218; --surface: #161b23; --surface-2: #1d242e; --text: #e8ecf2; --muted: #9aa6b8;
+    --border: #2a3340; --accent: #5aa2ff; --ok: #56d364; --ok-bg: #12301b; --warn: #e3b341; --warn-bg: #3a2f10;
+    --code-bg: #1d242e; --shadow: none;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 64px; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  a { color: var(--accent); }
+  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .88em; }
+  code { background: var(--code-bg); padding: .1em .35em; border-radius: 4px; }
+  pre { background: var(--code-bg); padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 10px 0; }
+  pre code { background: none; padding: 0; }
+
+  header.top { position: sticky; top: 0; z-index: 10; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .top-in { max-width: 1040px; margin: 0 auto; padding: 8px 16px; display: flex; gap: 14px; align-items: center; }
+  .top-in strong { white-space: nowrap; }
+  nav { display: flex; gap: 4px; overflow-x: auto; flex: 1; scrollbar-width: none; }
+  nav::-webkit-scrollbar { display: none; }
+  nav a { color: var(--muted); text-decoration: none; padding: 6px 10px; border-radius: 6px; white-space: nowrap; font-size: .9rem; }
+  nav a:hover { background: var(--surface-2); color: var(--text); }
+  button.theme { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+
+  main { max-width: 1040px; margin: 0 auto; padding: 0 16px 64px; }
+  .hero { padding: 40px 0 24px; }
+  .hero h1 { font-size: clamp(1.8rem, 5vw, 2.6rem); line-height: 1.15; margin: 0 0 8px; }
+  .hero p.lead { font-size: 1.1rem; color: var(--muted); max-width: 720px; margin: 0 0 20px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; font-size: .85rem; }
+
+  section { padding-top: 40px; }
+  h2 { font-size: 1.5rem; margin: 0 0 4px; }
+  h2 + p.sub { color: var(--muted); margin: 0 0 16px; }
+  h3 { font-size: 1.05rem; margin: 22px 0 8px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow); }
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+  .stat { padding: 14px 16px; }
+  .stat .k { color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; }
+  .stat .v { font-size: 1.25rem; font-weight: 650; margin-top: 2px; }
+  .stat .n { color: var(--muted); font-size: .85rem; }
+
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--surface-2); font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { font-weight: 600; white-space: nowrap; }
+
+  .tag { display: inline-block; font-size: .72rem; font-weight: 650; padding: 1px 8px; border-radius: 999px; vertical-align: middle; white-space: nowrap; }
+  .tag.ok { background: var(--ok-bg); color: var(--ok); }
+  .tag.warn { background: var(--warn-bg); color: var(--warn); }
+
+  .two { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .box { padding: 16px 18px; }
+  .box h3 { margin-top: 0; }
+  ul.tight { margin: 6px 0; padding-left: 20px; }
+  ul.tight li { margin: 3px 0; }
+
+  .bar { display: flex; height: 44px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: var(--surface-2); }
+  .bar div { display: flex; align-items: center; justify-content: center; font-size: .7rem; color: #fff; min-width: 0; overflow: hidden; border-right: 1px solid rgba(255,255,255,.35); }
+  .bar .free { background: var(--surface-2); color: var(--muted); }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: .82rem; color: var(--muted); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; }
+
+  svg.diagram { width: 100%; height: auto; display: block; }
+  svg text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; fill: var(--text); }
+  svg .m { fill: var(--muted); }
+  svg .node { fill: var(--surface-2); stroke: var(--border); }
+  svg .acc { fill: var(--accent); stroke: none; }
+  svg .line { stroke: var(--muted); stroke-width: 1.5; fill: none; }
+
+  footer { max-width: 1040px; margin: 0 auto; padding: 24px 16px 48px; color: var(--muted); border-top: 1px solid var(--border); font-size: .9rem; }
+  @media (max-width: 560px) { .top-in strong { display: none; } }
+  @media print { header.top, button.theme { display: none; } body { background: #fff; color: #000; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <strong>JC3248W535C</strong>
+    <nav aria-label="Sections">
+      <a href="#overview">Overview</a><a href="#hardware">Hardware</a><a href="#pins">Pin map</a>
+      <a href="#software">Software</a><a href="#firmware">Firmware</a><a href="#hub">Game hub</a>
+      <a href="#ux">UI rules</a><a href="#status">Status</a><a href="#build">Build</a><a href="#limits">Limits</a>
+    </nav>
+    <button class="theme" id="themeBtn" type="button" aria-label="Toggle colour theme">Theme</button>
+  </div>
+</header>
+
+<main>
+  <div class="hero" id="overview">
+    <h1>JC3248W535C touch display module<br>Product specification</h1>
+    <p class="lead">An ESP32-S3 module with a 3.5&nbsp;inch 320&times;480 capacitive touch display, microSD slot and speaker output,
+      running a suite of twelve apps: a game hub with eight games, a WiFi weather clock, a photo and video player,
+      a music player and an LVGL demo. Every item below is marked <span class="tag ok">verified</span> when it was tested on the real
+      board, or <span class="tag warn">unverified</span> when it was not.</p>
+    <div class="chips">
+      <span class="chip">Model JC3248W535C_I_Y</span><span class="chip">ESP32-S3</span><span class="chip">16&nbsp;MB flash</span>
+      <span class="chip">8&nbsp;MB PSRAM</span><span class="chip">320&times;480 IPS</span><span class="chip">Capacitive touch</span>
+      <span class="chip">PlatformIO + Arduino</span>
+    </div>
+  </div>
+
+  <section id="hardware">
+    <h2>Hardware specification</h2>
+    <p class="sub">What the module contains, as measured from the connected board unless noted.</p>
+    <div class="grid">
+      <div class="card stat"><div class="k">Processor</div><div class="v">ESP32-S3 (QFN56)</div><div class="n">Revision v0.2, dual core, 40&nbsp;MHz crystal</div></div>
+      <div class="card stat"><div class="k">Flash</div><div class="v">16&nbsp;MB</div><div class="n">Quad, 3.3&nbsp;V (measured with esptool)</div></div>
+      <div class="card stat"><div class="k">PSRAM</div><div class="v">8&nbsp;MB</div><div class="n">Embedded, reported at boot as 8,388,608 bytes</div></div>
+      <div class="card stat"><div class="k">Display</div><div class="v">3.5&Prime; IPS, 320&times;480</div><div class="n">Portrait, AXS15231B controller, QSPI</div></div>
+      <div class="card stat"><div class="k">Touch</div><div class="v">Capacitive, I2C</div><div class="n">Address 0x3B, single point used</div></div>
+      <div class="card stat"><div class="k">Storage</div><div class="v">microSD slot</div><div class="n">SPI mode, FAT card (tested with 480&nbsp;MB)</div></div>
+      <div class="card stat"><div class="k">Audio</div><div class="v">Speaker connector</div><div class="n">NS4168 mono I2S amp, JST&nbsp;1.25 2-pin. No speaker built in</div></div>
+      <div class="card stat"><div class="k">Wireless</div><div class="v">WiFi + BLE</div><div class="n">No classic Bluetooth, so no A2DP</div></div>
+      <div class="card stat"><div class="k">USB</div><div class="v">Native USB-C</div><div class="n">USB-Serial/JTAG, VID:PID 303A:1001, shows as <code>/dev/cu.usbmodem*</code></div></div>
+      <div class="card stat"><div class="k">Expansion</div><div class="v">Two 4-pin headers</div><div class="n">GND, 3.3&nbsp;V, GPIO17, GPIO18 (per vendor docs)</div></div>
+    </div>
+  </section>
+
+  <section id="pins">
+    <h2>Pin map</h2>
+    <p class="sub">GPIO assignments used by the firmware.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Function</th><th>GPIO</th><th>Notes</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Display QSPI</td><td>CS 45, SCK 47, D0 21, D1 48, D2 40, D3 39</td><td>Runs on SPI2. Driven at 40&nbsp;MHz</td><td><span class="tag ok">verified</span></td></tr>
+        <tr><td>Backlight</td><td>1</td><td>Digital on/off, or PWM via <code>analogWrite</code></td><td><span class="tag ok">verified</span></td></tr>
+        <tr><td>Touch I2C</td><td>SDA 4, SCL 8</td><td>Address 0x3B, 400&nbsp;kHz</td><td><span class="tag ok">verified</span></td></tr>
+        <tr><td>microSD</td><td>CS 10, MOSI 11, SCK 12, MISO 13</td><td>Separate bus (SPI3 / HSPI) so it never collides with the display</td><td><span class="tag ok">verified</span></td></tr>
+        <tr><td>Speaker I2S</td><td>BCLK 42, LRC 2, DOUT 41</td><td>From an ESPHome configuration for this board family</td><td><span class="tag warn">unverified</span> no speaker connected</td></tr>
+        <tr><td>Extension headers</td><td>17, 18</td><td>Per vendor documentation, not used by the firmware</td><td><span class="tag warn">unverified</span></td></tr>
+        <tr><td>BOOT button</td><td>0</td><td>Used as a backup &ldquo;return to hub&rdquo; input. Sits in a hole on the back, position not confirmed</td><td><span class="tag warn">unverified</span></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="software">
+    <h2>Software platform</h2>
+    <p class="sub">Toolchain, libraries and the settings that matter.</p>
+    <div class="two">
+      <div class="card box">
+        <h3>Toolchain</h3>
+        <ul class="tight">
+          <li><b>PlatformIO</b> with the <b>pioarduino</b> platform (Arduino core 3.x). The stock <code>espressif32</code> platform has core 2.x and the display library does not build on it.</li>
+          <li>Board <code>esp32-s3-devkitc-1</code>, 16&nbsp;MB flash, QIO flash mode, OPI PSRAM.</li>
+          <li>Flags: <code>-DBOARD_HAS_PSRAM -DARDUINO_USB_MODE=1 -DARDUINO_USB_CDC_ON_BOOT=1</code>.</li>
+          <li>esptool must run with PlatformIO&rsquo;s own Python (<code>~/.platformio/penv/bin/python</code>).</li>
+        </ul>
+      </div>
+      <div class="card box">
+        <h3>Libraries</h3>
+        <ul class="tight">
+          <li>GFX Library for Arduino <code>^1.5.6</code> (display, canvas)</li>
+          <li>LVGL <code>^9.2.2</code>, configured with build flags, no <code>lv_conf.h</code></li>
+          <li>ArduinoJson <code>^7.2.0</code> (weather)</li>
+          <li>JPEGDEC <code>^1.7.0</code> (photos and MJPEG video)</li>
+          <li>ESP32-audioI2S from its git repository (music), needs <code>-DCORE_DEBUG_LEVEL=0</code></li>
+        </ul>
+      </div>
+      <div class="card box">
+        <h3>Display pipeline</h3>
+        <ul class="tight">
+          <li>All drawing goes into a 320&times;480 RGB565 canvas in PSRAM, then one <code>flush()</code> sends the frame. Drawing straight to the panel garbles the image on this controller.</li>
+          <li>Flush only when something changed, at most every ~30&nbsp;ms. This is what makes touch feel instant.</li>
+          <li>Landscape media (480&times;320) is rotated 90&deg; in software.</li>
+        </ul>
+      </div>
+      <div class="card box">
+        <h3>Touch handling</h3>
+        <ul class="tight">
+          <li>Read 8 bytes after writing <code>B5 AB A5 5A 00 00 00 08</code>; byte&nbsp;1 is the touch count, bytes 2&ndash;5 hold X and Y.</li>
+          <li>The controller drops out for a few reads while a finger is down, so a release means 6 empty reads in a row.</li>
+          <li>A new press counts only after a full lift.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="firmware">
+    <h2>Firmware catalog</h2>
+    <p class="sub">Twelve apps. Each is one PlatformIO environment in <code>examples/</code>.</p>
+
+    <h3>Games (in the hub)</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>App</th><th>Description</th><th>Controls</th><th>Saved data</th></tr></thead>
+      <tbody>
+        <tr><td>Tic-Tac-Toe</td><td>Five modes: CPU Hard (unbeatable minimax), CPU Easy, 2 Players, Forever 2P and Forever CPU. Forever modes keep only 3 marks per player (the oldest fades, then vanishes) and give 4&nbsp;s per move.</td><td>Tap a cell; NEW GAME, MODE</td><td>Scoreboard per mode</td></tr>
+        <tr><td>2048</td><td>4&times;4 merge puzzle with score, best score, one-step undo and a win screen that lets you keep going.</td><td>Swipe; NEW, UNDO</td><td>Board, score, best</td></tr>
+        <tr><td>Snake</td><td>20&times;20 field. Speed ramps from 200 to 90&nbsp;ms per step as you eat.</td><td>On-screen arrows (or swipe); PAUSE, NEW</td><td>Best score</td></tr>
+        <tr><td>Connect 4</td><td>7&times;6 board with a falling-disc animation. Hard uses negamax with alpha-beta at depth&nbsp;7; Easy uses depth&nbsp;2 with random slips; plus a 2-player mode.</td><td>Tap a column</td><td>Scoreboard per mode</td></tr>
+        <tr><td>Tetris</td><td>10&times;20 field, 7-bag randomiser, ghost piece, next preview, levels every 10 lines, line-clear flash.</td><td>&lt; &gt; ROT v DROP PAUSE, hold to repeat</td><td>Best score</td></tr>
+        <tr><td>Minesweeper</td><td>Easy 8&times;10 (10 mines), Medium 10&times;12 (20), Hard 12&times;14 (34). First tap is always safe, flood fill and chording.</td><td>Tap to dig, long-press or FLAG toggle</td><td>Best time per level</td></tr>
+        <tr><td>Memory Match</td><td>12 drawn symbols, three sizes (3&times;4, 4&times;5, 4&times;6), flip animation, moves and timer.</td><td>Tap cards; LEVEL, NEW</td><td>Fewest moves per level</td></tr>
+        <tr><td>Paint</td><td>Finger painting with 8 colours (one is an eraser), brush size 1&ndash;20, clear, and save to <code>/paint/paintN.bmp</code>.</td><td>Draw; toolbar; HOME (tap twice)</td><td>BMP files on SD</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Media and demos (standalone)</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>App</th><th>Description</th><th>Needs</th></tr></thead>
+      <tbody>
+        <tr><td>Weather clock</td><td>LVGL app with Home and Settings tabs. NTP clock, current weather and 3-day forecast from Open-Meteo, WiFi scan and connect with an on-screen keyboard, city search, 12/24-hour switch, brightness. Credentials stay in on-board flash.</td><td>WiFi</td></tr>
+        <tr><td>Media player</td><td>Photo slideshow (<code>/pic</code>, JPEG) and MJPEG video (<code>/mjpeg</code>) from the SD card. Landscape media is rotated to fill the screen. Tap pauses, swipe changes item, long-press switches photos and video.</td><td>microSD</td></tr>
+        <tr><td>Music player</td><td>Plays MP3, WAV, FLAC, AAC and M4A from <code>/music</code> with a track list, previous / play / next, volume slider, progress bar and auto-advance.</td><td>microSD, speaker</td></tr>
+        <tr><td>LVGL basic</td><td>Minimal LVGL 9 demo with a button counter, slider, switch and arc. A starting point for new UIs.</td><td>None</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="hub">
+    <h2>Game hub architecture</h2>
+    <p class="sub">A launcher plus one separate firmware image per game, all inside the 16&nbsp;MB flash.</p>
+
+    <div class="card box">
+      <svg class="diagram" viewBox="0 0 760 250" role="img" aria-label="Hub launcher starts a game by selecting its flash slot and restarting; the game returns by selecting the launcher slot.">
+        <rect class="node" x="20" y="90" width="170" height="70" rx="10"/>
+        <text x="105" y="120" text-anchor="middle" font-size="15" font-weight="700">Launcher</text>
+        <text class="m" x="105" y="140" text-anchor="middle" font-size="12">ota_0 &middot; tiles + scores</text>
+        <rect class="node" x="560" y="30" width="180" height="190" rx="10"/>
+        <text x="650" y="55" text-anchor="middle" font-size="15" font-weight="700">Game slots</text>
+        <text class="m" x="650" y="80" text-anchor="middle" font-size="12">ota_1 Tic-Tac-Toe</text>
+        <text class="m" x="650" y="98" text-anchor="middle" font-size="12">ota_2 2048</text>
+        <text class="m" x="650" y="116" text-anchor="middle" font-size="12">ota_3 Snake</text>
+        <text class="m" x="650" y="134" text-anchor="middle" font-size="12">ota_4 Connect 4</text>
+        <text class="m" x="650" y="152" text-anchor="middle" font-size="12">ota_5 Tetris</text>
+        <text class="m" x="650" y="170" text-anchor="middle" font-size="12">ota_6 Minesweeper</text>
+        <text class="m" x="650" y="188" text-anchor="middle" font-size="12">ota_7 Memory</text>
+        <text class="m" x="650" y="206" text-anchor="middle" font-size="12">ota_8 Paint</text>
+        <path class="line" d="M190 112 C 300 112, 420 80, 556 80"/><polygon class="acc" points="556,75 566,80 556,85"/>
+        <text x="372" y="78" text-anchor="middle" font-size="12">tap tile: set boot slot, restart</text>
+        <path class="line" d="M556 170 C 420 190, 300 150, 194 140"/><polygon class="acc" points="194,135 184,140 194,145"/>
+        <text x="372" y="196" text-anchor="middle" font-size="12">hold top-left corner 1.5 s: boot launcher</text>
+      </svg>
+    </div>
+
+    <h3>Flash layout (16&nbsp;MB)</h3>
+    <div class="bar" role="img" aria-label="Flash layout: system area, launcher slot, eight game slots, two spare slots, free space">
+      <div style="width:.39%;background:#555" title="bootloader, partition table, NVS, otadata"></div>
+      <div style="width:10.16%;background:#1f6feb" title="ota_0 launcher, 1.625 MB">hub</div>
+      <div style="width:6.25%;background:#2da44e" title="ota_1">1</div><div style="width:6.25%;background:#2da44e" title="ota_2">2</div>
+      <div style="width:6.25%;background:#2da44e" title="ota_3">3</div><div style="width:6.25%;background:#2da44e" title="ota_4">4</div>
+      <div style="width:6.25%;background:#2da44e" title="ota_5">5</div><div style="width:6.25%;background:#2da44e" title="ota_6">6</div>
+      <div style="width:6.25%;background:#2da44e" title="ota_7">7</div><div style="width:6.25%;background:#2da44e" title="ota_8">8</div>
+      <div style="width:12.5%;background:#8250df" title="ota_9 and ota_10, reserved for more apps">spare</div>
+      <div class="free" style="width:26.96%">unused</div>
+    </div>
+    <div class="legend">
+      <span><i style="background:#555"></i>Bootloader, table, NVS, otadata (64&nbsp;KB)</span>
+      <span><i style="background:#1f6feb"></i>ota_0 launcher, 1.625&nbsp;MB</span>
+      <span><i style="background:#2da44e"></i>ota_1&ndash;8 games, 1&nbsp;MB each (each image is about 430&ndash;465&nbsp;KB)</span>
+      <span><i style="background:#8250df"></i>ota_9&ndash;10 reserved</span>
+    </div>
+
+    <div class="two" style="margin-top:16px">
+      <div class="card box">
+        <h3>How it behaves</h3>
+        <ul class="tight">
+          <li>Tapping a tile plays a grow-to-fullscreen animation, makes that slot the boot partition, and restarts (about one second).</li>
+          <li>Each tile shows the game&rsquo;s saved best score, read from the game&rsquo;s own NVS namespace. The last-played game has a white outline.</li>
+          <li>Every game sets the launcher as the next boot app as soon as it starts, so a reset or power-up always lands on the hub.</li>
+        </ul>
+      </div>
+      <div class="card box">
+        <h3>Returning to the hub</h3>
+        <ul class="tight">
+          <li><b>Hold the top-left corner for 1.5&nbsp;s</b> in any game except Paint.</li>
+          <li><b>Paint:</b> on-screen HOME button, tap twice (the first tap warns that the drawing will be lost).</li>
+          <li>Backup: hold the BOOT button for 0.7&nbsp;s.</li>
+          <li>Run standalone, an app ignores these gestures.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="ux">
+    <h2>UI design rules learned on this hardware</h2>
+    <p class="sub">These came from testing, and every game follows them.</p>
+    <div class="two">
+      <div class="card box"><h3>Do</h3><ul class="tight">
+        <li>Use large on-screen buttons that act on press.</li>
+        <li>Require a full finger lift between presses.</li>
+        <li>Make keyboards about 320&nbsp;px tall with a 20&nbsp;pt key font.</li>
+        <li>Flush the canvas only when something changed.</li>
+        <li>Show a clear status line and confirm destructive actions (Paint HOME needs two taps).</li>
+      </ul></div>
+      <div class="card box"><h3>Avoid</h3><ul class="tight">
+        <li>Swipe-only controls. A full-frame redraw can miss part of a swipe.</li>
+        <li>Treating three empty touch reads as a release.</li>
+        <li>Drawing directly to the panel instead of through the canvas.</li>
+        <li>Blocking HTTP calls in the UI loop; use a worker task.</li>
+        <li>Names such as <code>TX</code> or <code>stat</code> that clash with Arduino or libc symbols.</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section id="status">
+    <h2>Verification status</h2>
+    <p class="sub">Honest summary of what was tested on the physical board.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Area</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>Chip, flash, PSRAM detection</td><td><span class="tag ok">verified</span> ESP32-S3, 16&nbsp;MB flash, 8&nbsp;MB PSRAM</td></tr>
+        <tr><td>Display and touch</td><td><span class="tag ok">verified</span> correct picture and accurate touch in every app</td></tr>
+        <tr><td>LVGL (demo, weather clock, keyboard)</td><td><span class="tag ok">verified</span> touch works; larger keyboard confirmed usable</td></tr>
+        <tr><td>WiFi weather clock</td><td><span class="tag ok">verified</span> works end to end</td></tr>
+        <tr><td>microSD, photos, MJPEG video</td><td><span class="tag ok">verified</span> 8 photos and 3 videos found; picture, rotation and playback confirmed correct</td></tr>
+        <tr><td>All eight games</td><td><span class="tag ok">verified</span> each one played and kept after testing</td></tr>
+        <tr><td>Game hub launch and return</td><td><span class="tag ok">verified</span> launching, top-left corner return, Paint HOME, scores on tiles</td></tr>
+        <tr><td>Music player UI and track scan</td><td><span class="tag ok">verified</span> 28 tracks found, controls displayed</td></tr>
+        <tr><td>Music audio output</td><td><span class="tag warn">unverified</span> no speaker was connected; I2S pins are unconfirmed</td></tr>
+        <tr><td>Paint BMP file opened on a computer</td><td><span class="tag warn">unverified</span> drawing and toolbar work; the saved file was not opened</td></tr>
+        <tr><td>BOOT button return to hub; reset landing on hub</td><td><span class="tag warn">unverified</span> implemented, not reported as tested</td></tr>
+        <tr><td>Frame rate of video</td><td><span class="tag warn">unmeasured</span> plays correctly; no steady-state fps figure was recorded</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="build">
+    <h2>Build, flash and extend</h2>
+    <p class="sub">Run from the repository root.</p>
+    <h3>Install the whole hub</h3>
+<pre><code>tools/flash_hub.sh            # builds and flashes the launcher, partition table and all games
+                              # auto-detects /dev/cu.usbmodem*</code></pre>
+    <h3>Flash a single app</h3>
+<pre><code>pio run -e tetris -t upload --upload-port /dev/cu.usbmodem101
+pio device monitor</code></pre>
+    <p>Flashing one app on its own overwrites the launcher slot. Run <code>tools/flash_hub.sh</code> to restore the hub. If an upload will not start, hold BOOT, tap RESET, release BOOT, and retry.</p>
+    <h3>Add a game</h3>
+    <ul class="tight">
+      <li>Create <code>examples/&lt;name&gt;/main.cpp</code> and an <code>[env:&lt;name&gt;]</code> in <code>platformio.ini</code> with <code>build_src_filter = -&lt;*&gt; +&lt;&lt;name&gt;/&gt;</code>.</li>
+      <li>Include <code>../common/hub_home.h</code> and wrap the touch read so it calls <code>hubTouchNote()</code>.</li>
+      <li>Add a tile in <code>examples/hub/main.cpp</code> and the name in <code>tools/flash_hub.sh</code>. Slot offsets are <code>0x1B0000 + (N-1) &times; 0x100000</code>.</li>
+    </ul>
+    <h3>SD card layout</h3>
+<pre><code>/pic/*.jpg       photos for the slideshow
+/mjpeg/*.mjpeg   videos (concatenated JPEG frames)
+/music/*.mp3     audio (also wav, flac, aac, m4a)
+/paint/          created by Paint when you save
+# make a video: ffmpeg -i in.mp4 -vf "scale=480:320" -q:v 6 -r 20 out.mjpeg</code></pre>
+  </section>
+
+  <section id="limits">
+    <h2>Known limitations</h2>
+    <p class="sub">What to expect.</p>
+    <ul class="tight">
+      <li>One touch point only. Multi-touch is not supported by the firmware.</li>
+      <li>The display is portrait only, and landscape media is rotated in software.</li>
+      <li>The built-in font has no CJK glyphs, so non-ASCII track names show as &ldquo;Track N&rdquo;.</li>
+      <li>No built-in speaker. Sound needs a 4&ndash;8&nbsp;&Omega; speaker on the JST&nbsp;1.25 connector.</li>
+      <li>Bluetooth is LE only, so the module cannot act as a Bluetooth speaker or play to Bluetooth headphones.</li>
+      <li>Going from a game back to the hub restarts the chip, so there is about a one-second black gap.</li>
+      <li>Switching to the hub from Paint loses an unsaved drawing.</li>
+      <li>Standalone samples use the same partition table once the hub is installed, so the launcher slot (1.625&nbsp;MB) is the size limit for a single standalone app.</li>
+    </ul>
+  </section>
+</main>
+
+<footer>
+  <p>Source, samples and build scripts: <a href="https://github.com/sirisakG2/JC3248W535C">github.com/sirisakG2/JC3248W535C</a>.
+  Specification generated from the firmware and test results in that repository.</p>
+</footer>
+
+<script>
+  (function () {
+    var root = document.documentElement, btn = document.getElementById('themeBtn');
+    try { var saved = localStorage.getItem('theme'); if (saved) root.setAttribute('data-theme', saved); } catch (e) {}
+    btn.addEventListener('click', function () {
+      var dark = root.getAttribute('data-theme') === 'dark' ||
+                 (!root.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      var next = dark ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('theme', next); } catch (e) {}
+    });
+  })();
+</script>
+</body>
+</html>
